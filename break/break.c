@@ -8,19 +8,18 @@
 #define SDL_ERR() (fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, SDL_GetError()), exit(EXIT_FAILURE))
 
 // We use globals since there's not much happening and I'm a lazy fuck
-SDL_Window *win;
-SDL_Renderer *ren;
-SDL_bool quit = SDL_FALSE;
+static SDL_Window *win;
+static SDL_Renderer *ren;
+static SDL_bool quit;
 
-void init();
-void loop();
-void getInput();
-void updateState();
-void render();
-void clean();
+void init(void);
+void loop(void);
+void getInput(void);
+void updateState(void);
+void render(void);
+void clean(void);
 
 int main() {
-
 	init();
 	loop();
 	clean();
@@ -37,8 +36,9 @@ void init() {
 	                       SCREEN_HEIGHT,
 	                       SDL_WINDOW_SHOWN);
 	if(win == NULL) SDL_ERR();
-	SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if(ren == NULL) SDL_ERR();
+	quit = SDL_FALSE;
 }
 
 void loop() {
