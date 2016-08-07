@@ -4,7 +4,9 @@
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
 #define TICK_INTERNAL 17
-#define MOVE 3
+#define MOVE 1
+#define ARENA_WIDTH 100
+#define PADDLE_WIDTH 10
 
 #define SDL_ERR() (fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, SDL_GetError()), exit(EXIT_FAILURE))
 
@@ -16,6 +18,8 @@ static SDL_bool quit;
 static SDL_Rect paddle;
 static SDL_bool right;
 static SDL_bool left;
+
+static short position;
 
 void init(void);
 void loop(void);
@@ -34,23 +38,19 @@ int main() {
 void init() {
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO) != 0)
 		SDL_ERR();
-	win = SDL_CreateWindow("Breakout",
+	win = SDL_CreateWindow("break",
 	                       SDL_WINDOWPOS_CENTERED,
 	                       SDL_WINDOWPOS_CENTERED,
 	                       SCREEN_WIDTH,
 	                       SCREEN_HEIGHT,
-	                       SDL_WINDOW_SHOWN);
+	                       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 	if(win == NULL) SDL_ERR();
 	ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if(ren == NULL) SDL_ERR();
 	quit = SDL_FALSE;
 	right = SDL_FALSE;
 	left = SDL_FALSE;
-
-	paddle.h = 10;
-	paddle.w = 100;
-	paddle.x = (SCREEN_WIDTH - paddle.w)/2;
-	paddle.y = SCREEN_HEIGHT - paddle.h - 20;
+	position = 50;
 }
 
 void loop() {
@@ -99,16 +99,28 @@ void getInput() {
 }
 
 void updateState() {
-	if (left) paddle.x -= MOVE;
-	if (right) paddle.x += MOVE;
+	if (left) position -= MOVE;
+	if (right) position += MOVE;
+	if (position < 0) position = 0;
+	if (position >= ARENA_WIDTH) position = ARENA_WIDTH;
 }
 
 void render() {
-		SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
-		SDL_RenderClear(ren);
-		SDL_SetRenderDrawColor(ren, 0xff, 0xff, 0xff, 0xff);
-		SDL_RenderFillRect(ren, &paddle);
-		SDL_RenderPresent(ren);
+	int w = 0;
+	int h = 0;
+	SDL_GetWindowSize(win, &w, &h);
+
+	paddle.h = 10;
+	paddle.w = ((PADDLE_WIDTH * w) / (PADDLE_WIDTH + ARENA_WIDTH));
+
+	paddle.y = h - (paddle.h * 3);
+	paddle.x = (position * (w - paddle.w)) / ARENA_WIDTH;
+
+	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
+	SDL_RenderClear(ren);
+	SDL_SetRenderDrawColor(ren, 0xff, 0xff, 0xff, 0xff);
+	SDL_RenderFillRect(ren, &paddle);
+	SDL_RenderPresent(ren);
 }
 
 void clean() {
