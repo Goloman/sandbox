@@ -20,10 +20,13 @@ static SDL_bool right;
 static SDL_bool left;
 
 static short position;
+static int win_w;
+static int win_h;
 
 void init(void);
 void loop(void);
 void getInput(void);
+void handleWindowEvent(SDL_Event *e);
 void updateState(void);
 void render(void);
 void clean(void);
@@ -51,6 +54,10 @@ void init() {
 	right = SDL_FALSE;
 	left = SDL_FALSE;
 	position = 50;
+	SDL_GetWindowSize(win, &win_w, &win_h);
+	paddle.h = 10;
+	paddle.w = ((PADDLE_WIDTH * win_w) / (PADDLE_WIDTH + ARENA_WIDTH));
+	paddle.y = win_h - (paddle.h * 3);
 }
 
 void loop() {
@@ -81,6 +88,8 @@ void getInput() {
 			case SDLK_RIGHT:
 				right = SDL_TRUE;
 				break;
+			default:
+				break;
 			}
 			break;
 		case SDL_KEYUP:
@@ -93,9 +102,19 @@ void getInput() {
 				break;
 			}
 			break;
+		case SDL_WINDOWEVENT:
+			handleWindowEvent(&e);
+			break;
 		default:
 			break;
 		}
+}
+
+void handleWindowEvent(SDL_Event * e) {
+	SDL_GetWindowSize(win, &win_w, &win_h);
+	paddle.h = 10;
+	paddle.w = ((PADDLE_WIDTH * win_w) / (PADDLE_WIDTH + ARENA_WIDTH));
+	paddle.y = win_h - (paddle.h * 3);
 }
 
 void updateState() {
@@ -106,16 +125,8 @@ void updateState() {
 }
 
 void render() {
-	int w = 0;
-	int h = 0;
-	SDL_GetWindowSize(win, &w, &h);
 
-	paddle.h = 10;
-	paddle.w = ((PADDLE_WIDTH * w) / (PADDLE_WIDTH + ARENA_WIDTH));
-
-	paddle.y = h - (paddle.h * 3);
-	paddle.x = (position * (w - paddle.w)) / ARENA_WIDTH;
-
+	paddle.x = (position * (win_w - paddle.w)) / ARENA_WIDTH;
 	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
 	SDL_RenderClear(ren);
 	SDL_SetRenderDrawColor(ren, 0xff, 0xff, 0xff, 0xff);
