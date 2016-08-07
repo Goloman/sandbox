@@ -1,2 +1,2 @@
 CC=clang
-CFLAGS=-lSDL2 -lSDL2_image -Weverything
+CFLAGS=-lSDL2 -lSDL2_image -Weverything -O3
