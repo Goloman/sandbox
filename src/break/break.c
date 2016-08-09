@@ -15,6 +15,8 @@ static SDL_Window *win;
 static SDL_Renderer *ren;
 static SDL_bool quit;
 
+static SDL_Rect playArea;
+
 static SDL_Rect paddle;
 static SDL_bool right;
 static SDL_bool left;
@@ -26,7 +28,7 @@ static int win_h;
 void init(void);
 void loop(void);
 void getInput(void);
-void handleWindowEvent(SDL_Event *e);
+void handleWindowEvent(SDL_Event *ev);
 void updateState(void);
 void render(void);
 void clean(void);
@@ -75,7 +77,7 @@ void loop() {
 
 void getInput() {
 	SDL_Event e;
-	while (SDL_PollEvent(&e))
+	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
 		case SDL_QUIT:
 			quit = SDL_TRUE;
@@ -108,13 +110,34 @@ void getInput() {
 		default:
 			break;
 		}
+	}
+
 }
 
-void handleWindowEvent(SDL_Event * e) {
-	SDL_GetWindowSize(win, &win_w, &win_h);
-	paddle.h = 10;
-	paddle.w = ((PADDLE_WIDTH * win_w) / (PADDLE_WIDTH + ARENA_WIDTH));
-	paddle.y = win_h - (paddle.h * 3);
+void handleWindowEvent(SDL_Event *ev) {
+	SDL_WindowEvent *e = (SDL_WindowEvent *)ev;
+	switch (e->event) {
+	case SDL_WINDOWEVENT_RESIZED:
+		if (e->data1 * 3 > e->data2 * 4) {
+			playArea.w = (e->data2 * 4) / 3;
+			playArea.h = e->data2;
+			playArea.x = (e->data1 - playArea.w) / 2;
+			playArea.y = 0;
+		} else {
+			playArea.w = e->data1;
+			playArea.h = (e->data1 * 3) / 4;
+			playArea.x = 0;
+			playArea.y = (e->data2 - playArea.h) / 2;
+		}
+
+
+		paddle.h = 10;
+		paddle.w = ((PADDLE_WIDTH * e->data1) / (PADDLE_WIDTH + ARENA_WIDTH));
+		paddle.y = e->data2 - (paddle.h * 3);
+		break;
+	default:
+		break;
+	}
 }
 
 void updateState() {
@@ -125,10 +148,11 @@ void updateState() {
 }
 
 void render() {
-
 	paddle.x = (position * (win_w - paddle.w)) / ARENA_WIDTH;
-	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
+	SDL_SetRenderDrawColor(ren, 0x33, 0x33, 0x33, 0xff);
 	SDL_RenderClear(ren);
+	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
+	SDL_RenderFillRect(ren, &playArea);
 	SDL_SetRenderDrawColor(ren, 0xff, 0xff, 0xff, 0xff);
 	SDL_RenderFillRect(ren, &paddle);
 	SDL_RenderPresent(ren);
