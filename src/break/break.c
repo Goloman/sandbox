@@ -22,8 +22,6 @@ static SDL_bool right;
 static SDL_bool left;
 
 static short position;
-static int win_w;
-static int win_h;
 
 void init(void);
 void loop(void);
@@ -56,10 +54,13 @@ void init() {
 	right = SDL_FALSE;
 	left = SDL_FALSE;
 	position = 50;
-	SDL_GetWindowSize(win, &win_w, &win_h);
+	playArea.x = 0;
+	playArea.y = 0;
+	playArea.w = SCREEN_WIDTH;
+	playArea.h = SCREEN_HEIGHT;
 	paddle.h = 10;
-	paddle.w = ((PADDLE_WIDTH * win_w) / (PADDLE_WIDTH + ARENA_WIDTH));
-	paddle.y = win_h - (paddle.h * 3);
+	paddle.w = ((PADDLE_WIDTH * playArea.w) / (PADDLE_WIDTH + ARENA_WIDTH));
+	paddle.y = playArea.h - (paddle.h * 3);
 }
 
 void loop() {
@@ -129,11 +130,9 @@ void handleWindowEvent(SDL_Event *ev) {
 			playArea.x = 0;
 			playArea.y = (e->data2 - playArea.h) / 2;
 		}
-
-
 		paddle.h = 10;
-		paddle.w = ((PADDLE_WIDTH * e->data1) / (PADDLE_WIDTH + ARENA_WIDTH));
-		paddle.y = e->data2 - (paddle.h * 3);
+		paddle.w = ((PADDLE_WIDTH * playArea.w) / (PADDLE_WIDTH + ARENA_WIDTH));
+		paddle.y = playArea.h + playArea.y - (paddle.h * 3);
 		break;
 	default:
 		break;
@@ -144,11 +143,11 @@ void updateState() {
 	if (left) position -= MOVE;
 	if (right) position += MOVE;
 	if (position < 0) position = 0;
-	if (position >= ARENA_WIDTH) position = ARENA_WIDTH;
+	if (position > ARENA_WIDTH - PADDLE_WIDTH) position = ARENA_WIDTH - PADDLE_WIDTH;
 }
 
 void render() {
-	paddle.x = (position * (win_w - paddle.w)) / ARENA_WIDTH;
+	paddle.x = playArea.x + (position * playArea.w) / (ARENA_WIDTH - 1);
 	SDL_SetRenderDrawColor(ren, 0x33, 0x33, 0x33, 0xff);
 	SDL_RenderClear(ren);
 	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
