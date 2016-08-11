@@ -5,8 +5,10 @@
 #define SCREEN_HEIGHT 480
 #define TICK_INTERNAL 17
 #define MOVE 1
-#define ARENA_WIDTH 100
+#define ARENA_WIDTH 120
+#define ARENA_HEIGHT 90
 #define PADDLE_WIDTH 10
+#define PADDLE_HEIGHT 1
 
 #define SDL_ERR() (fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, SDL_GetError()), exit(EXIT_FAILURE))
 
@@ -58,8 +60,8 @@ void init() {
 	playArea.y = 0;
 	playArea.w = SCREEN_WIDTH;
 	playArea.h = SCREEN_HEIGHT;
-	paddle.h = 10;
-	paddle.w = ((PADDLE_WIDTH * playArea.w) / (PADDLE_WIDTH + ARENA_WIDTH));
+	paddle.h = (PADDLE_HEIGHT * playArea.h) / ARENA_HEIGHT;
+	paddle.w = (PADDLE_WIDTH * playArea.w) / ARENA_WIDTH;
 	paddle.y = playArea.h - (paddle.h * 3);
 }
 
@@ -130,8 +132,8 @@ void handleWindowEvent(SDL_Event *ev) {
 			playArea.x = 0;
 			playArea.y = (e->data2 - playArea.h) / 2;
 		}
-		paddle.h = 10;
-		paddle.w = ((PADDLE_WIDTH * playArea.w) / (PADDLE_WIDTH + ARENA_WIDTH));
+		paddle.h = (PADDLE_HEIGHT * playArea.h) / ARENA_HEIGHT;
+		paddle.w = (PADDLE_WIDTH * playArea.w) / ARENA_WIDTH;
 		paddle.y = playArea.h + playArea.y - (paddle.h * 3);
 		break;
 	default:
@@ -147,7 +149,7 @@ void updateState() {
 }
 
 void render() {
-	paddle.x = playArea.x + (position * playArea.w) / (ARENA_WIDTH - 1);
+	paddle.x = playArea.x + (position * playArea.w) / ARENA_WIDTH;
 	SDL_SetRenderDrawColor(ren, 0x33, 0x33, 0x33, 0xff);
 	SDL_RenderClear(ren);
 	SDL_SetRenderDrawColor(ren, 0x00, 0x00, 0x00, 0xff);
