@@ -9,6 +9,8 @@
 #define ARENA_HEIGHT 90
 #define PADDLE_WIDTH 10
 #define PADDLE_HEIGHT 1
+#define BALL_W 1
+#define BALL_H 1
 
 #define SDL_ERR() (fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__, SDL_GetError()), exit(EXIT_FAILURE))
 
@@ -19,11 +21,15 @@ static SDL_bool quit;
 
 static SDL_Rect playArea;
 
+static SDL_Rect ball;
 static SDL_Rect paddle;
 static SDL_bool right;
 static SDL_bool left;
 
 static short position;
+
+static short ball_x;
+static short ball_y;
 
 void init(void);
 void loop(void);
@@ -63,6 +69,10 @@ void init() {
 	paddle.h = (PADDLE_HEIGHT * playArea.h) / ARENA_HEIGHT;
 	paddle.w = (PADDLE_WIDTH * playArea.w) / ARENA_WIDTH;
 	paddle.y = playArea.h - (paddle.h * 3);
+	ball_x = 55;
+	ball_y = 40;
+	ball.h = (BALL_H * playArea.h) / ARENA_HEIGHT;
+	ball.w = (BALL_W * playArea.w) / ARENA_WIDTH;
 }
 
 void loop() {
@@ -132,6 +142,8 @@ void handleWindowEvent(SDL_Event *ev) {
 			playArea.x = 0;
 			playArea.y = (e->data2 - playArea.h) / 2;
 		}
+		ball.h = (BALL_H * playArea.h) / ARENA_HEIGHT;
+		ball.w = (BALL_W * playArea.w) / ARENA_WIDTH;
 		paddle.h = (PADDLE_HEIGHT * playArea.h) / ARENA_HEIGHT;
 		paddle.w = (PADDLE_WIDTH * playArea.w) / ARENA_WIDTH;
 		paddle.y = playArea.h + playArea.y - (paddle.h * 3);
@@ -146,9 +158,13 @@ void updateState() {
 	if (right) position += MOVE;
 	if (position < 0) position = 0;
 	if (position > ARENA_WIDTH - PADDLE_WIDTH) position = ARENA_WIDTH - PADDLE_WIDTH;
+	ball_x = (ball_x + 1) % ARENA_WIDTH;
+	ball_y = (ball_y + 1) % ARENA_HEIGHT;
 }
 
 void render() {
+	ball.x = playArea.x + (ball_x * playArea.w) / ARENA_WIDTH;
+	ball.y = playArea.y + (ball_y * playArea.h) / ARENA_HEIGHT;
 	paddle.x = playArea.x + (position * playArea.w) / ARENA_WIDTH;
 	SDL_SetRenderDrawColor(ren, 0x33, 0x33, 0x33, 0xff);
 	SDL_RenderClear(ren);
@@ -156,6 +172,7 @@ void render() {
 	SDL_RenderFillRect(ren, &playArea);
 	SDL_SetRenderDrawColor(ren, 0xff, 0xff, 0xff, 0xff);
 	SDL_RenderFillRect(ren, &paddle);
+	SDL_RenderFillRect(ren, &ball);
 	SDL_RenderPresent(ren);
 }
 
